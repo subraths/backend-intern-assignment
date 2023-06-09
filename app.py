@@ -29,6 +29,7 @@ def get_all_tasks():
         cursor.execute(query)
         data = cursor.fetchall()
         cursor.close()
+
         tasks = []
         for row in data:
             task = {
@@ -36,6 +37,7 @@ def get_all_tasks():
                 "name": row[1],
                 "description": row[2],
                 "due_date": str(row[3]),
+                "status": row[4],
             }
             tasks.append(task)
         return jsonify(tasks)
@@ -79,6 +81,7 @@ def get_single_task(id):
                     "name": row[1],
                     "description": row[2],
                     "due_date": str(row[3]),
+                    "status": row[4],
                 }
                 tasks.append(task)
             return jsonify(tasks), 200
@@ -88,23 +91,16 @@ def get_single_task(id):
         name = request.form["name"]
         description = request.form["description"]
         due_date = request.form["due_date"]
+        status = request.form["status"]
 
-        if not (name and description and due_date):
-            return jsonify({"message": "please proide parameters"}), 400
+        # if status != "Completed" or "Incomplete" or "In Progress":
+        #     return jsonify(
+        #         {
+        #             "message": "please provide anyone of the values 'Compeleted', 'Incomplete' or 'In Progress"
+        #         }
+        #     )
 
-        query = "UPDATE tasks SET"
-        if name is not None:
-            query += f" name='{name}',"
-
-        if description is not None:
-            query += f" description='{description}',"
-
-        if due_date is not None:
-            query += f" due_date='{due_date}',"
-
-        query = query.rstrip(",")
-
-        query += f" WHERE ID={id}"
+        query = f"UPDATE tasks SET name='{name}', description='{description}', due_date='{due_date}', status='{status}' WHERE ID={id}"
 
         try:
             cursor.execute(query)
@@ -112,7 +108,7 @@ def get_single_task(id):
             cursor.close()
             return jsonify({"message": "success"})
         except Exception as e:
-            return jsonify({"message": "failed", "err": str(e)})
+            return jsonify({"message": "failed", "err": str(e)}), 400
 
     if request.method == "DELETE":
         try:
@@ -129,10 +125,7 @@ def get_single_task(id):
 
 @app.errorhandler(HTTPException)
 def handle_exception(e):
-    """Return JSON instead of HTML for HTTP errors."""
-    # start with the correct headers and status code from the error
     response = e.get_response()
-    # replace the body with JSON
     response.data = json.dumps(
         {
             "code": e.code,
