@@ -20,7 +20,6 @@ app.config["MYSQL_DB"] = DB_NAME
 
 mysql = MySQL(app)
 
-
 @app.get("/")
 def get_all_tasks():
     cursor = mysql.connection.cursor()
@@ -58,7 +57,7 @@ def create_task():
         mysql.connection.commit()
         cursor.fetchall()
         cursor.close()
-        return jsonify({"message": "sicc"})
+        return jsonify({"message": "success"})
     except Exception as e:
         print(f"Error executing {str(e)}")
         return jsonify({"message": "failed", "err": str(e)}), 400
@@ -116,7 +115,7 @@ def get_single_task(id):
             cursor.execute(query)
             mysql.connection.commit()
             cursor.close()
-            return jsonify({"message": "cic"})
+            return jsonify({"message": "success"})
         except Exception as e:
             return jsonify({"message": "failed", "error": f"str(e), check id"}), 400
 
